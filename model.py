@@ -10,6 +10,8 @@ from runway import RunwayModel
 
 stylegan = RunwayModel()
 
+fmt = dict(func=tflib.convert_images_to_uint8, nchw_to_nhwc=True)
+
 
 @stylegan.setup
 def setup(alpha=0.5):
@@ -22,10 +24,10 @@ def setup(alpha=0.5):
     return Gs
 
 
-@stylegan.command('convert', inputs={'image': 'image'}, outputs={'output': 'image'})
+@stylegan.command('convert', inputs={'z': 'vector'}, outputs={'output': 'image'})
 def convert(Gs, inp):
-    fmt = dict(func=tflib.convert_images_to_uint8, nchw_to_nhwc=True)
-    latents = np.random.RandomState(1000).randn(1, *Gs.input_shapes[0][1:])
+    truncation = 0.5
+    latents = np.array(inp['z']).reshape((1, 512))  # np.random.RandomState(1000).randn(1, *Gs.input_shapes[0][1:])
     #labels = np.zeros([latents.shape[0]] + Gs.input_shapes[1][1:])
     images = Gs.run(latents, None, truncation_psi=truncation, randomize_noise=False, output_transform=fmt)
     output = np.clip(images[0], 0, 255).astype(np.uint8)

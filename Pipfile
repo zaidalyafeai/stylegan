@@ -13,7 +13,7 @@ moviepy = "*"
 jupyter = "*"
 jupyterlab = "*"
 matplotlib = "*"
-runway-python = "*"
+runway-python = "==0.0.10"
 
 [requires]
 python_version = "3.6.8"
