@@ -14,6 +14,7 @@ jupyter = "*"
 jupyterlab = "*"
 matplotlib = "*"
 runway-python = "==0.0.10"
+scipy = "*"
 
 [requires]
 python_version = "3.6.8"
