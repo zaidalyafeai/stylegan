@@ -26,7 +26,8 @@ def setup(alpha=0.5):
 
 @stylegan.command('convert', inputs={'z': 'vector'}, outputs={'output': 'image'})
 def convert(Gs, inp):
-    truncation = 0.5
+    truncation = inp['truncation']
+    print('got trunc ',truncation)
     latents = np.array(inp['z']).reshape((1, 512))  # np.random.RandomState(1000).randn(1, *Gs.input_shapes[0][1:])
     #labels = np.zeros([latents.shape[0]] + Gs.input_shapes[1][1:])
     images = Gs.run(latents, None, truncation_psi=truncation, randomize_noise=False, output_transform=fmt)
