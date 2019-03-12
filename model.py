@@ -1,38 +1,28 @@
 import pickle
 import numpy as np
 import tensorflow as tf
-import PIL.Image
-import random
-import dnnlib
 import dnnlib.tflib as tflib
-import config
-from runway import RunwayModel
-
-stylegan = RunwayModel()
+import runway
+from runway.data_types import checkpoint, number, vector, image
 
 fmt = dict(func=tflib.convert_images_to_uint8, nchw_to_nhwc=True)
 
-
-@stylegan.setup
-def setup(alpha=0.5):
+@runway.setup(options=[checkpoint(name='checkpoint')])
+def setup(opts):
     global Gs
     tflib.init_tf()
-    model = 'checkpoints/karras2019stylegan-ffhq-1024x1024.pkl'
-    print("open model %s" % model)
-    with open(model, 'rb') as file:
+    with open(opts['checkpoint'], 'rb') as file:
         G, D, Gs = pickle.load(file)
     return Gs
 
 
-@stylegan.command('convert', inputs={'z': 'vector', 'truncation': 'float'}, outputs={'output': 'image'})
-def convert(Gs, inp):
-    truncation = inp['truncation']
-    latents = np.array(inp['z']).reshape((1, 512))  # np.random.RandomState(1000).randn(1, *Gs.input_shapes[0][1:])
-    #labels = np.zeros([latents.shape[0]] + Gs.input_shapes[1][1:])
-    images = Gs.run(latents, None, truncation_psi=truncation, randomize_noise=False, output_transform=fmt)
+@runway.command('generate', inputs=[vector(512), number(name='truncation', min=0, max=1, default=0.8, step=0.1)], outputs=[image])
+def convert(model, z, truncation):
+    latents = z.reshape((1, 512))
+    images = model.run(latents, None, truncation_psi=truncation, randomize_noise=False, output_transform=fmt)
     output = np.clip(images[0], 0, 255).astype(np.uint8)
-    return dict(output=output)
+    return output
 
 
 if __name__ == '__main__':
-    stylegan.run()
+    runway.run()

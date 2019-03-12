@@ -1,7 +1,4 @@
-name: StyleGAN
-description: A Style-Based Generator Architecture for Generative Adversarial Networks
-license: Creative Commons Attribution-NonCommercial 4.0 International
-base: python3.5
 entrypoint: python model.py
-build_steps:
-  - pip install -r requirements-pip.txt
+python: 3.6
+framework: tensorflow
+cuda: 9.0
