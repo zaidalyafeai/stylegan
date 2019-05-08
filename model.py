@@ -3,11 +3,10 @@ import numpy as np
 import tensorflow as tf
 import dnnlib.tflib as tflib
 import runway
-from runway.data_types import checkpoint, number, vector, image
 
 fmt = dict(func=tflib.convert_images_to_uint8, nchw_to_nhwc=True)
 
-@runway.setup(options=[checkpoint(name='checkpoint')])
+@runway.setup(options={'checkpoint': runway.file(extension='.pkl')})
 def setup(opts):
     global Gs
     tflib.init_tf()
@@ -16,12 +15,19 @@ def setup(opts):
     return Gs
 
 
-@runway.command('generate', inputs=[vector(512), number(name='truncation', min=0, max=1, default=0.8, step=0.1)], outputs=[image])
-def convert(model, z, truncation):
+generate_inputs = {
+    'z': runway.vector(512, sampling_std=0.5),
+    'truncation': runway.number(min=0, max=1, default=0.8, step=0.01)
+}
+
+@runway.command('generate', inputs=generate_inputs, outputs={'image': runway.image})
+def convert(model, inputs):
+    z = inputs['z']
+    truncation = inputs['truncation']
     latents = z.reshape((1, 512))
     images = model.run(latents, None, truncation_psi=truncation, randomize_noise=False, output_transform=fmt)
     output = np.clip(images[0], 0, 255).astype(np.uint8)
-    return output
+    return {'image': output}
 
 
 if __name__ == '__main__':
